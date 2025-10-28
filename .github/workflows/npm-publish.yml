@@ -1,0 +1,43 @@
+name: Publish NPM Package to JFrog
+
+on:
+  workflow_call:
+    inputs:
+      jfrog-url:
+        required: true
+        type: string
+      build-name:
+        required: false
+        type: string
+      build-number:
+        required: false
+        type: string
+    secrets:
+      JFROG_ACCESS_TOKEN:
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JFROG_ACCESS_TOKEN: ${{ secrets.JFROG_ACCESS_TOKEN }}
+
+      - name: Configure JFrog CLI
+        env:
+          JFROG_ACCESS_TOKEN: ${{ secrets.JFROG_ACCESS_TOKEN }}
+        run: |
+          jf config add artifactory-server \
+            --url="${{ inputs.jfrog-url }}" \
+            --access-token="$JFROG_ACCESS_TOKEN" \
+            --interactive=false
+
+      - name: Publish build info
+        if: ${{ inputs.build-name != '' && inputs.build-number != '' }}
+        run: |
+          jf rt bce "${{ inputs.build-name }}" "${{ inputs.build-number }}"
+          jf rt bp "${{ inputs.build-name }}" "${{ inputs.build-number }}" \
+            --server-id=artifactory-server
+          echo "Build info published for ${{ inputs.build-name }} #${{ inputs.build-number }}"
