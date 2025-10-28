@@ -20,13 +20,13 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository (for Git metadata)
+        uses: actions/checkout@v5
+
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@v4
         env:
           JFROG_ACCESS_TOKEN: ${{ secrets.JFROG_ACCESS_TOKEN }}
-      - name: Checkout repository (for Git metadata)
-        uses: actions/checkout@v5
-   
 
       - name: Configure JFrog CLI
         env:
@@ -37,15 +37,15 @@ jobs:
             --access-token="$JFROG_ACCESS_TOKEN" \
             --interactive=false
 
-      - name: Publish build info
+      - name: Publish build info (including npm module)
         if: ${{ inputs['build-name'] != '' && inputs['build-number'] != '' }}
         run: |
-           jf rt bag "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" .
-           jf rt bce "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
-           jf rt bp "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" --server-id=artifactory-server
-           #echo "Build info published for ${{ inputs.build-name }} #${{ inputs.build-number }}"
-           #jf rt bce "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
-           #jf rt bp "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" \
-           #--server-id=artifactory-server
-           #echo "Build info published for ${{ inputs['build-name'] }} ${{ inputs['build-number'] }}"
-         
+          echo "Collecting npm module info for build..."
+          jf rt build-add-npm "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
+          echo "Attaching artifacts..."
+          jf rt bag "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" .
+          echo "Collecting environment info..."
+          jf rt bce "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
+          echo "Publishing build info to Artifactory..."
+          jf rt bp "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" --server-id=artifactory-server
+          echo "✅ Build info published for ${{ inputs['build-name'] }} #${{ inputs['build-number'] }}"
