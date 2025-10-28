@@ -94,5 +94,5 @@ jobs:
           jf rt upload "$PACKAGE_TGZ" "${{ inputs.jfrog-npm-repository }}" \
             --flat=false \
             --server-id=artifactory-server \
-            --build-name="${{ inputs.build-name }}" \
-            --build-number="${{ inputs.build-number }}"
+            --build-name="${{ inputs['build-name'] }}" \
+            --build-number="${{ inputs['build-number'] }}"
