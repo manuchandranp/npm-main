@@ -1,0 +1,97 @@
+name: Upload NPM Package to JFrog
+
+on:
+  workflow_call:
+    inputs:
+      jfrog-npm-repository:
+        required: true
+        type: string
+      jfrog-url:
+        required: true
+        type: string
+      node-version:
+        required: true
+        type: string
+      package-json-file-path:
+        required: true
+        type: string
+      download-artifact:
+        required: false
+        type: boolean
+      artifact-name:
+        required: false
+        type: string
+      build-name:
+        required: false
+        type: string
+      build-number:
+        required: false
+        type: string
+    secrets:
+      JFROG_ACCESS_TOKEN:
+        required: true
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: (Optional) Download build artifact
+        if: ${{ inputs.download-artifact == true }}
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JFROG_ACCESS_TOKEN: ${{ secrets.JFROG_ACCESS_TOKEN }}
+
+      - name: Configure JFrog CLI
+        env:
+          JFROG_ACCESS_TOKEN: ${{ secrets.JFROG_ACCESS_TOKEN }}
+        run: |
+          jf config add artifactory-server \
+            --url="${{ inputs.jfrog-url }}" \
+            --access-token="$JFROG_ACCESS_TOKEN" \
+            --interactive=false
+
+      - name: Configure npm for JFrog
+        run: |
+          REPO="${{ inputs.jfrog-npm-repository }}"
+          jf npm-config \
+            --repo-deploy "$REPO" \
+            --repo-resolve "$REPO" \
+            --server-id-deploy=artifactory-server \
+            --server-id-resolve=artifactory-server
+
+      - name: Prepare package location
+        id: pkg
+        run: |
+          PACKAGE_JSON_PATH="${{ inputs.package-json-file-path }}"
+          PACKAGE_DIR="$(dirname "$PACKAGE_JSON_PATH")"
+          echo "package_dir=$PACKAGE_DIR" >> $GITHUB_OUTPUT
+
+      - name: Pack and upload npm package
+        env:
+          JFROG_ACCESS_TOKEN: ${{ secrets.JFROG_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd "${{ steps.pkg.outputs.package_dir }}"
+          npm ci || npm install
+          npm pack
+
+          PACKAGE_TGZ=$(ls *.tgz | head -n 1)
+          jf rt upload "$PACKAGE_TGZ" "${{ inputs.jfrog-npm-repository }}" \
+            --flat=false \
+            --server-id=artifactory-server \
+            --build-name="${{ inputs.build-name }}" \
+            --build-number="${{ inputs.build-number }}"
