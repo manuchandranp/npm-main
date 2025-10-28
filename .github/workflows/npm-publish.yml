@@ -38,14 +38,14 @@ jobs:
             --interactive=false
 
       - name: Publish build info
-        if: ${{ inputs.build-name != '' && inputs.build-number != '' }}
+        if: ${{ inputs['build-name'] != '' && inputs['build-number'] != '' }}
         run: |
-           #jf rt bag "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" .
-           #jf rt bce "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
-           #jf rt bp "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" --server-id=artifactory-server
-           #echo "Build info published for ${{ inputs.build-name }} #${{ inputs.build-number }}"
+           jf rt bag "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" .
            jf rt bce "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
-           jf rt bp "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" \
-           --server-id=artifactory-server
-           echo "Build info published for ${{ inputs['build-name'] }} ${{ inputs['build-number'] }}"
+           jf rt bp "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" --server-id=artifactory-server
+           #echo "Build info published for ${{ inputs.build-name }} #${{ inputs.build-number }}"
+           #jf rt bce "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
+           #jf rt bp "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" \
+           #--server-id=artifactory-server
+           #echo "Build info published for ${{ inputs['build-name'] }} ${{ inputs['build-number'] }}"
          
