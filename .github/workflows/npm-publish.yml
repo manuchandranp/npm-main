@@ -44,8 +44,8 @@ jobs:
            #jf rt bce "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
            #jf rt bp "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" --server-id=artifactory-server
            #echo "Build info published for ${{ inputs.build-name }} #${{ inputs.build-number }}"
-           jf rt bce "${{ inputs.build-name }}" "${{ inputs.build-number }}"
-           jf rt bp "${{ inputs.build-name }}" "${{ inputs.build-number }}" \
+           jf rt bce "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
+           jf rt bp "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" \
            --server-id=artifactory-server
-           echo "Build info published for ${{ inputs.build-name }} #${{ inputs.build-number }}"
+           echo "Build info published for ${{ inputs['build-name'] }} ${{ inputs['build-number'] }}"
          
