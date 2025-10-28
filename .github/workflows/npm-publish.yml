@@ -41,7 +41,7 @@ jobs:
         if: ${{ inputs['build-name'] != '' && inputs['build-number'] != '' }}
         run: |
           echo "Collecting npm module info for build..."
-          jf rt build-add-npm "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
+          jf rt bad "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}"
           echo "Attaching artifacts..."
           jf rt bag "${{ inputs['build-name'] }}" "${{ inputs['build-number'] }}" .
           echo "Collecting environment info..."
