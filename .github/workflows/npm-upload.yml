@@ -89,7 +89,7 @@ jobs:
           npm ci || npm install
           npm pack
           PACKAGE_TGZ=$(ls *.tgz | head -n 1)
-          jf npm-publish "${{ inputs['jfrog-npm-repository'] }}" \
+          jf npm publish "${{ inputs['jfrog-npm-repository'] }}" \
           --server-id=artifactory-server \
           --build-name="${{ inputs['build-name'] }}" \
            --build-number="${{ inputs['build-number'] }}"
